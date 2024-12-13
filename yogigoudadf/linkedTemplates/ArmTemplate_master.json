@@ -7,13 +7,13 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "yogigoudadf"
 		},
-		"ls_azblob_covidreporting_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'ls_azblob_covidreporting'"
-		},
 		"ls_azblob_covidreport_target_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_azblob_covidreport_target'"
+		},
+		"ls_azblob_covidreporting_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_azblob_covidreporting'"
 		},
 		"ls_azblob_covidreport_target_properties_typeProperties_url": {
 			"type": "string",
@@ -46,11 +46,11 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"ls_azblob_covidreporting_connectionString": {
-						"value": "[parameters('ls_azblob_covidreporting_connectionString')]"
-					},
 					"ls_azblob_covidreport_target_accountKey": {
 						"value": "[parameters('ls_azblob_covidreport_target_accountKey')]"
+					},
+					"ls_azblob_covidreporting_connectionString": {
+						"value": "[parameters('ls_azblob_covidreporting_connectionString')]"
 					},
 					"ls_azblob_covidreport_target_properties_typeProperties_url": {
 						"value": "[parameters('ls_azblob_covidreport_target_properties_typeProperties_url')]"
