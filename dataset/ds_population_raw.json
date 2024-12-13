@@ -1,0 +1,23 @@
+{
+	"name": "ds_population_raw",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azblob_covidreporting",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "population_by_age.tsv",
+				"container": "poppulation"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
