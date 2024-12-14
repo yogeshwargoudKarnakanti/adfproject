@@ -1,22 +1,19 @@
 {
-	"name": "ds_population_raw_src",
+	"name": "config",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_azblob_covidreporting",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
-		"type": "DelimitedText",
+		"type": "Json",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"container": "poppulation"
-			},
-			"columnDelimiter": ",",
-			"escapeChar": "\\",
-			"firstRowAsHeader": true,
-			"quoteChar": "\""
+				"fileName": "ecdc_file_list_for_2_files.json",
+				"container": "config"
+			}
 		},
-		"schema": []
+		"schema": {}
 	}
 }

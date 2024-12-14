@@ -1,16 +1,24 @@
 {
-	"name": "ds_population_raw_src",
+	"name": "ds_cases_death_raw_http",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "ls_azblob_covidreporting",
+			"referenceName": "ls_Http_ecdc_data",
 			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"realativeurl": {
+				"type": "string"
+			}
 		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
-				"type": "AzureBlobStorageLocation",
-				"container": "poppulation"
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "@dataset().realativeurl",
+					"type": "Expression"
+				}
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
