@@ -1,9 +1,9 @@
 {
-	"name": "pl_with_dataset",
+	"name": "pl_process_casesandDeaths",
 	"properties": {
 		"activities": [
 			{
-				"name": "dftransformed_cases_and_deaths",
+				"name": "Data flow1",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
