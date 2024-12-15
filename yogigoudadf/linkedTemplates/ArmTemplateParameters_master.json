@@ -11,6 +11,9 @@
 		"ls_azblob_covidreporting_connectionString": {
 			"value": ""
 		},
+		"ls_Http_ecdc_data_properties_typeProperties_url": {
+			"value": "https://ecdc.blob.core.windows.net"
+		},
 		"ls_azblob_covidreport_target_properties_typeProperties_url": {
 			"value": "https://yogicovidreportdl.dfs.core.windows.net/"
 		},

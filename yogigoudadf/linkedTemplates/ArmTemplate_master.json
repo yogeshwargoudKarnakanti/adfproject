@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_azblob_covidreporting'"
 		},
+		"ls_Http_ecdc_data_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://ecdc.blob.core.windows.net"
+		},
 		"ls_azblob_covidreport_target_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://yogicovidreportdl.dfs.core.windows.net/"
@@ -51,6 +55,9 @@
 					},
 					"ls_azblob_covidreporting_connectionString": {
 						"value": "[parameters('ls_azblob_covidreporting_connectionString')]"
+					},
+					"ls_Http_ecdc_data_properties_typeProperties_url": {
+						"value": "[parameters('ls_Http_ecdc_data_properties_typeProperties_url')]"
 					},
 					"ls_azblob_covidreport_target_properties_typeProperties_url": {
 						"value": "[parameters('ls_azblob_covidreport_target_properties_typeProperties_url')]"
