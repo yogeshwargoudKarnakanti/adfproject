@@ -13,7 +13,17 @@
 				}
 			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "selectRequiredColumns"
+				},
+				{
+					"name": "pivotcounts"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          country as string,",
@@ -21,7 +31,7 @@
 				"          continent as string,",
 				"          population as string,",
 				"          indicator as string,",
-				"          daily_count as string,",
+				"          daily_count as integer,",
 				"          date as string,",
 				"          rate_14_day as string,",
 				"          source as string",
@@ -29,7 +39,28 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     limit: 2000,",
-				"     ignoreNoFilesFound: false) ~> CasesandDeathsSource"
+				"     ignoreNoFilesFound: false) ~> CasesandDeathsSource",
+				"CasesandDeathsSource filter(continent=='Europe' && not(isNull(country_code))) ~> filter1",
+				"filter1 select(mapColumn(",
+				"          country,",
+				"          country_code,",
+				"          population,",
+				"          indicator,",
+				"          daily_count,",
+				"          source,",
+				"          each(match(name == 'date'),",
+				"               'reported'+'_date' = $$)",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> selectRequiredColumns",
+				"selectRequiredColumns pivot(groupBy(population,",
+				"          source,",
+				"          reported_date,",
+				"          country_special = country+country_code),",
+				"     pivotBy(indicator),",
+				"     deaths_count = sum(daily_count),",
+				"     columnNaming: '$N_$V',",
+				"     lateral: true) ~> pivotcounts"
 			]
 		}
 	}
