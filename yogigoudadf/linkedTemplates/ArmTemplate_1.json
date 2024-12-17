@@ -13,134 +13,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/DataFlowCasesAndDeaths')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_raw_cases_and_deaths",
-								"type": "DatasetReference"
-							},
-							"name": "CasesandDeathsSource"
-						},
-						{
-							"dataset": {
-								"referenceName": "ds_country_lookup",
-								"type": "DatasetReference"
-							},
-							"name": "countryLookup"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_processed_CasesandDeaths",
-								"type": "DatasetReference"
-							},
-							"name": "CaseandDeaths"
-						}
-					],
-					"transformations": [
-						{
-							"name": "filter1"
-						},
-						{
-							"name": "selectRequiredColumns"
-						},
-						{
-							"name": "pivotcounts"
-						},
-						{
-							"name": "lookup1"
-						},
-						{
-							"name": "selectRequiredColumn"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          country as string,",
-						"          country_code as string,",
-						"          continent as string,",
-						"          population as string,",
-						"          indicator as string,",
-						"          daily_count as integer,",
-						"          date as string,",
-						"          rate_14_day as string,",
-						"          source as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     limit: 2000,",
-						"     ignoreNoFilesFound: false) ~> CasesandDeathsSource",
-						"source(output(",
-						"          country as string,",
-						"          country_code_2_digit as string,",
-						"          country_code_3_digit as string,",
-						"          continent as string,",
-						"          population as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> countryLookup",
-						"CasesandDeathsSource filter(continent=='Europe' && not(isNull(country_code))) ~> filter1",
-						"filter1 select(mapColumn(",
-						"          country,",
-						"          country_code,",
-						"          population,",
-						"          indicator,",
-						"          daily_count,",
-						"          source,",
-						"          each(match(name=='date'),",
-						"               'reported'+'_date' = $$)",
-						"     ),",
-						"     skipDuplicateMapInputs: false,",
-						"     skipDuplicateMapOutputs: false) ~> selectRequiredColumns",
-						"selectRequiredColumns pivot(groupBy(population,",
-						"          country_code,",
-						"          country,",
-						"          source,",
-						"          reported_date,",
-						"          country_special = country+country_code),",
-						"     pivotBy(indicator, ['confirmed cases', 'deaths']),",
-						"     count = sum(daily_count),",
-						"     columnNaming: '$V_$N',",
-						"     lateral: true) ~> pivotcounts",
-						"pivotcounts, countryLookup lookup(pivotcounts@country == countryLookup@country,",
-						"     multiple: false,",
-						"     pickup: 'any',",
-						"     broadcast: 'auto')~> lookup1",
-						"lookup1 select(mapColumn(",
-						"          population = pivotcounts@population,",
-						"          country = pivotcounts@country,",
-						"          {confirmed cases_count},",
-						"          country_code_2_digit,",
-						"          country_code_3_digit,",
-						"          country_code,",
-						"          deaths_count,",
-						"          source,",
-						"          reported_date,",
-						"          country_special",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectRequiredColumn",
-						"selectRequiredColumn sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> CaseandDeaths"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/dataflowHospitalAdmissionData')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -399,6 +271,55 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/HospitalAdmission')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "HospitalAdmission",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflowHospitalAdmissionData",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"importDataFromdsHospitalAdmissionData": {},
+									"sourceCountryLookUp": {},
+									"SourceDimDate": {},
+									"sinkWeeklyData": {},
+									"sinkDailyData": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflowHospitalAdmissionData')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_process_casesandDeaths')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -441,9 +362,7 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/DataFlowCasesAndDeaths')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_with_dataset')]",
@@ -488,9 +407,7 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/DataFlowCasesAndDeaths')]"
-			]
+			"dependsOn": []
 		}
 	]
 }
