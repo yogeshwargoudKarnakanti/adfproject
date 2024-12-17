@@ -26,7 +26,22 @@
 					"name": "SourceDimDate"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_WeeklyData",
+						"type": "DatasetReference"
+					},
+					"name": "sinkWeeklyData"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_DailyData",
+						"type": "DatasetReference"
+					},
+					"name": "sinkDailyData"
+				}
+			],
 			"transformations": [
 				{
 					"name": "selectRequiresColumns"
@@ -48,6 +63,24 @@
 				},
 				{
 					"name": "joinWithDate"
+				},
+				{
+					"name": "weeklyIcuAndAdmissioncounts"
+				},
+				{
+					"name": "dailyAdmissionAndIcuCount"
+				},
+				{
+					"name": "sortWeekly"
+				},
+				{
+					"name": "sortDaily"
+				},
+				{
+					"name": "selectWeekly"
+				},
+				{
+					"name": "selectDaily"
 				}
 			],
 			"scriptLines": [
@@ -127,7 +160,95 @@
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> joinWithDate"
+				"     broadcast: 'auto')~> joinWithDate",
+				"DailyAndWeeklyOccupency@weekly pivot(groupBy(country,",
+				"          reported_year_week,",
+				"          source,",
+				"          country_code_2_digit,",
+				"          country_code_3_digit,",
+				"          population),",
+				"     pivotBy(indicator, ['weeklyHospitalAdmission', 'weeklyIcuAmission']),",
+				"     count = sum(value),",
+				"     columnNaming: '$N$V',",
+				"     lateral: true) ~> weeklyIcuAndAdmissioncounts",
+				"DailyAndWeeklyOccupency@Daily pivot(groupBy(country,",
+				"          reported_date,",
+				"          source,",
+				"          country_code_2_digit,",
+				"          country_code_3_digit,",
+				"          population),",
+				"     pivotBy(indicator, ['Daily hospital occupancy', 'Daily ICU occupancy']),",
+				"     count = sum(value),",
+				"     columnNaming: '$N$V',",
+				"     lateral: true) ~> dailyAdmissionAndIcuCount",
+				"weeklyIcuAndAdmissioncounts sort(asc(country, true),",
+				"     desc(reported_year_week, true),",
+				"     partitionLevel: true) ~> sortWeekly",
+				"dailyAdmissionAndIcuCount sort(asc(country, true),",
+				"     desc(reported_date, true),",
+				"     partitionLevel: true) ~> sortDaily",
+				"sortWeekly select(mapColumn(",
+				"          country,",
+				"          country_code_2_digit,",
+				"          country_code_3_digit,",
+				"          reported_year_week,",
+				"          population,",
+				"          countweeklyHospitalAdmission,",
+				"          countweeklyIcuAmission,",
+				"          source",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectWeekly",
+				"sortDaily select(mapColumn(",
+				"          country,",
+				"          country_code_2_digit,",
+				"          country_code_3_digit,",
+				"          reported_date,",
+				"          population,",
+				"          {countDaily hospital occupancy},",
+				"          {countDaily ICU occupancy},",
+				"          source",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectDaily",
+				"selectWeekly sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          population as string,",
+				"          country as string,",
+				"          {confirmed cases_count} as string,",
+				"          country_code_2_digit as string,",
+				"          country_code_3_digit as string,",
+				"          country_code as string,",
+				"          deaths_count as string,",
+				"          source as string,",
+				"          reported_date as string,",
+				"          country_special as string",
+				"     ),",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkWeeklyData",
+				"selectDaily sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          population as string,",
+				"          country as string,",
+				"          {confirmed cases_count} as string,",
+				"          country_code_2_digit as string,",
+				"          country_code_3_digit as string,",
+				"          country_code as string,",
+				"          deaths_count as string,",
+				"          source as string,",
+				"          reported_date as string,",
+				"          country_special as string",
+				"     ),",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkDailyData"
 			]
 		}
 	}
